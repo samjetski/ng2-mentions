@@ -24,9 +24,10 @@ System.register(['angular2/core', './mention-utils'], function(exports_1, contex
             MentionList = (function () {
                 function MentionList(_element) {
                     this._element = _element;
-                    this.items = ['Test'];
+                    this.items = [];
                     this.activeIndex = 0;
                     this.hidden = false;
+                    this.itemClick = new core_1.EventEmitter();
                 }
                 MentionList.prototype.position = function (nativeParentElement) {
                     var coords = { top: 0, left: 0 };
@@ -59,11 +60,15 @@ System.register(['angular2/core', './mention-utils'], function(exports_1, contex
                 MentionList.prototype.activatePreviousItem = function () {
                     this.activeIndex = Math.max(Math.min(this.activeIndex - 1, this.items.length - 1), 0);
                 };
+                __decorate([
+                    core_1.Output(), 
+                    __metadata('design:type', Object)
+                ], MentionList.prototype, "itemClick", void 0);
                 MentionList = __decorate([
                     core_1.Component({
                         selector: 'mention-list',
                         styles: ["\n      .scrollable-menu {\n        display: block;\n        height: auto;\n        max-height: 300px;\n        overflow: auto;\n      }\n    ", "\n      [hidden] {\n        display: none;\n      }\n    "],
-                        template: "\n    <ul class=\"dropdown-menu scrollable-menu\" [hidden]=\"hidden\">\n        <li *ngFor=\"#item of items; #i = index\" [class.active]=\"activeIndex==i\">\n            <a class=\"text-primary\">{{item}}</a>\n        </li>\n    </ul>\n    ",
+                        template: "\n    <ul class=\"dropdown-menu scrollable-menu\" [hidden]=\"hidden\">\n        <li *ngFor=\"#item of items; #i = index\" [class.active]=\"activeIndex==i\">\n            <a class=\"text-primary\" (click)=\"activeIndex=i;itemClick.emit()\">{{item}}</a>\n        </li>\n    </ul>\n    "
                     }), 
                     __metadata('design:paramtypes', [core_1.ElementRef])
                 ], MentionList);

@@ -10,18 +10,20 @@ System.register(["angular2/core", './mention-list', './mention-utils'], function
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, mention_list_1, mention_utils_1;
+    var core_1, core_2, mention_list_1, mention_utils_1, mention_utils_2;
     var KEY_BACKSPACE, KEY_TAB, KEY_ENTER, KEY_SHIFT, KEY_ESCAPE, KEY_SPACE, KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN, KEY_2, Mention;
     return {
         setters:[
             function (core_1_1) {
                 core_1 = core_1_1;
+                core_2 = core_1_1;
             },
             function (mention_list_1_1) {
                 mention_list_1 = mention_list_1_1;
             },
             function (mention_utils_1_1) {
                 mention_utils_1 = mention_utils_1_1;
+                mention_utils_2 = mention_utils_1_1;
             }],
         execute: function() {
             KEY_BACKSPACE = 8;
@@ -47,9 +49,14 @@ System.register(["angular2/core", './mention-list', './mention-utils'], function
                     enumerable: true,
                     configurable: true
                 });
+                Mention.prototype.stopEvent = function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                };
                 Mention.prototype.keyHandler = function (event) {
                     var val = mention_utils_1.getValue(this._element.nativeElement);
-                    var pos = mention_utils_1.getCaretPosition(this._element.nativeElement);
+                    var pos = mention_utils_2.getCaretPosition(this._element.nativeElement);
                     var charPressed = event.key;
                     if (!charPressed) {
                         var charCode = event.which || event.keyCode;
@@ -119,20 +126,19 @@ System.register(["angular2/core", './mention-list', './mention-utils'], function
                         }
                     }
                 };
-                Mention.prototype.stopEvent = function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    event.stopImmediatePropagation();
-                };
                 Mention.prototype.showSeachList = function () {
                     var _this = this;
                     if (this.searchList == null) {
-                        this._dcl.loadNextToLocation(mention_list_1.MentionList, this._element, [])
+                        this._dcl.loadNextToLocation(mention_list_1.MentionList, this._element)
                             .then(function (containerRef) {
                             _this.searchList = containerRef.instance;
                             _this.searchList.items = _this.items;
                             _this.searchList.hidden = false;
                             _this.searchList.position(_this._element.nativeElement);
+                            containerRef.instance['itemClick'].subscribe(function (ev) {
+                                var fakeKeydown = new KeyboardEvent('keydown', { "keyCode": KEY_ENTER });
+                                _this.keyHandler(fakeKeydown);
+                            });
                         });
                     }
                     else {
@@ -154,7 +160,7 @@ System.register(["angular2/core", './mention-list', './mention-utils'], function
                             '(keydown)': 'keyHandler($event)',
                         },
                     }), 
-                    __metadata('design:paramtypes', [core_1.ElementRef, core_1.DynamicComponentLoader])
+                    __metadata('design:paramtypes', [core_1.ElementRef, core_2.DynamicComponentLoader])
                 ], Mention);
                 return Mention;
             }());
