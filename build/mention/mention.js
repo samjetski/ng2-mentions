@@ -49,14 +49,18 @@ System.register(["angular2/core", './mention-list', './mention-utils'], function
                     enumerable: true,
                     configurable: true
                 });
+                Mention.prototype.setIframe = function (iframe) {
+                    this.iframe = iframe;
+                };
                 Mention.prototype.stopEvent = function (event) {
                     event.preventDefault();
                     event.stopPropagation();
                     event.stopImmediatePropagation();
                 };
-                Mention.prototype.keyHandler = function (event) {
-                    var val = mention_utils_1.getValue(this._element.nativeElement);
-                    var pos = mention_utils_2.getCaretPosition(this._element.nativeElement);
+                Mention.prototype.keyHandler = function (event, nativeElement) {
+                    if (nativeElement === void 0) { nativeElement = this._element.nativeElement; }
+                    var val = mention_utils_1.getValue(nativeElement);
+                    var pos = mention_utils_2.getCaretPosition(nativeElement, this.iframe);
                     var charPressed = event.key;
                     if (!charPressed) {
                         var charCode = event.which || event.keyCode;
@@ -70,63 +74,64 @@ System.register(["angular2/core", './mention-list', './mention-utils'], function
                             charPressed = String.fromCharCode(event.which || event.keyCode);
                         }
                     }
+                    console.log("keyHandler", this.mentionStart, pos, val, charPressed, event);
                     if (charPressed == "@") {
                         this.mentionStart = pos;
                         this.escapePressed = false;
-                        this.showSeachList();
+                        this.showSearchList(nativeElement);
                     }
                     else if (this.mentionStart >= 0 && !this.escapePressed) {
                         if (event.keyCode != KEY_SHIFT && pos > this.mentionStart) {
                             if (event.keyCode === KEY_SPACE) {
                                 this.mentionStart = -1;
                             }
-                            else if (event.keyCode === KEY_TAB || event.keyCode === KEY_ENTER) {
-                                this.stopEvent(event);
-                                this.searchList.hidden = true;
-                                mention_utils_1.insertValue(this._element.nativeElement, this.mentionStart, pos, "@" + this.searchList.activeItem + " ");
-                                this.mentionStart = -1;
-                                return false;
-                            }
-                            else if (event.keyCode === KEY_ESCAPE) {
-                                this.stopEvent(event);
-                                this.searchList.hidden = true;
-                                this.escapePressed = true;
-                                return false;
-                            }
-                            else if (event.keyCode === KEY_DOWN) {
-                                this.stopEvent(event);
-                                this.searchList.activateNextItem();
-                                return false;
-                            }
-                            else if (event.keyCode === KEY_UP) {
-                                this.stopEvent(event);
-                                this.searchList.activatePreviousItem();
-                                return false;
-                            }
                             else if (event.keyCode === KEY_BACKSPACE && pos > 0) {
                                 this.searchList.hidden = this.escapePressed;
                                 pos--;
                             }
-                            if (!this.searchList.hidden) {
-                                if (event.keyCode === KEY_LEFT || event.keyCode === KEY_RIGHT) {
+                            else if (!this.searchList.hidden) {
+                                if (event.keyCode === KEY_TAB || event.keyCode === KEY_ENTER) {
                                     this.stopEvent(event);
+                                    this.searchList.hidden = true;
+                                    mention_utils_1.insertValue(nativeElement, this.mentionStart, pos, "@" + this.searchList.activeItem + " ", this.iframe);
+                                    this.mentionStart = -1;
                                     return false;
                                 }
-                                else {
-                                    var mention = val.substring(this.mentionStart, pos);
-                                    if (event.keyCode !== KEY_BACKSPACE) {
-                                        mention += charPressed;
-                                    }
-                                    var regEx_1 = new RegExp("^" + mention.substring(1), "i");
-                                    var matches = this.items.filter(function (e) { return e.match(regEx_1) != null; });
-                                    this.searchList.items = matches;
-                                    this.searchList.hidden = matches.length == 0 || pos <= this.mentionStart;
+                                else if (event.keyCode === KEY_ESCAPE) {
+                                    this.stopEvent(event);
+                                    this.searchList.hidden = true;
+                                    this.escapePressed = true;
+                                    return false;
                                 }
+                                else if (event.keyCode === KEY_DOWN) {
+                                    this.stopEvent(event);
+                                    this.searchList.activateNextItem();
+                                    return false;
+                                }
+                                else if (event.keyCode === KEY_UP) {
+                                    this.stopEvent(event);
+                                    this.searchList.activatePreviousItem();
+                                    return false;
+                                }
+                            }
+                            if (event.keyCode === KEY_LEFT || event.keyCode === KEY_RIGHT) {
+                                this.stopEvent(event);
+                                return false;
+                            }
+                            else {
+                                var mention = val.substring(this.mentionStart, pos);
+                                if (event.keyCode !== KEY_BACKSPACE) {
+                                    mention += charPressed;
+                                }
+                                var regEx_1 = new RegExp("^" + mention.substring(1), "i");
+                                var matches = this.items.filter(function (e) { return e.match(regEx_1) != null; });
+                                this.searchList.items = matches;
+                                this.searchList.hidden = matches.length == 0 || pos <= this.mentionStart;
                             }
                         }
                     }
                 };
-                Mention.prototype.showSeachList = function () {
+                Mention.prototype.showSearchList = function (nativeElement) {
                     var _this = this;
                     if (this.searchList == null) {
                         this._dcl.loadNextToLocation(mention_list_1.MentionList, this._element)
@@ -134,17 +139,18 @@ System.register(["angular2/core", './mention-list', './mention-utils'], function
                             _this.searchList = containerRef.instance;
                             _this.searchList.items = _this.items;
                             _this.searchList.hidden = false;
-                            _this.searchList.position(_this._element.nativeElement);
+                            _this.searchList.position(nativeElement, _this.iframe);
                             containerRef.instance['itemClick'].subscribe(function (ev) {
                                 var fakeKeydown = new KeyboardEvent('keydown', { "keyCode": KEY_ENTER });
-                                _this.keyHandler(fakeKeydown);
+                                _this.keyHandler(fakeKeydown, nativeElement);
                             });
                         });
                     }
                     else {
+                        this.searchList.activeIndex = 0;
                         this.searchList.items = this.items;
                         this.searchList.hidden = false;
-                        this.searchList.position(this._element.nativeElement);
+                        this.searchList.position(nativeElement, this.iframe);
                     }
                 };
                 __decorate([

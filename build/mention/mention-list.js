@@ -29,23 +29,20 @@ System.register(['angular2/core', './mention-utils'], function(exports_1, contex
                     this.hidden = false;
                     this.itemClick = new core_1.EventEmitter();
                 }
-                MentionList.prototype.position = function (nativeParentElement) {
+                MentionList.prototype.position = function (nativeParentElement, iframe) {
+                    if (iframe === void 0) { iframe = null; }
                     var coords = { top: 0, left: 0 };
-                    if (mention_utils_1.isInputOrTextArea(nativeParentElement)) {
+                    if (mention_utils_1.isInputOrTextAreaElement(nativeParentElement)) {
                         coords = getCaretCoordinates(nativeParentElement, nativeParentElement.selectionStart);
-                        coords.top = nativeParentElement.offsetTop + coords.top;
+                        coords.top = nativeParentElement.offsetTop + coords.top + 16;
                         coords.left = nativeParentElement.offsetLeft + coords.left;
                     }
                     else {
-                        var doc = document.documentElement;
-                        var scrollLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
-                        var scrollTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
-                        var position = mention_utils_1.getSelectionCoords(window);
-                        coords = { top: position.y + scrollTop, left: position.x + scrollLeft };
+                        coords = mention_utils_1.getContentEditableCaretCoords(nativeParentElement, iframe);
                     }
                     this._element.nativeElement.style.position = "absolute";
                     this._element.nativeElement.style.left = coords.left + 'px';
-                    this._element.nativeElement.style.top = coords.top + 16 + 'px';
+                    this._element.nativeElement.style.top = coords.top + 'px';
                 };
                 Object.defineProperty(MentionList.prototype, "activeItem", {
                     get: function () {

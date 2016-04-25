@@ -1,4 +1,4 @@
-System.register(['angular2/core', './mention/mention', './common-names'], function(exports_1, context_1) {
+System.register(['angular2/core', './mention/mention', './common-names', './tinymce.component'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', './mention/mention', './common-names'], functi
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, mention_1, common_names_1;
+    var core_1, mention_1, common_names_1, tinymce_component_1;
     var AppComponent;
     return {
         setters:[
@@ -22,6 +22,9 @@ System.register(['angular2/core', './mention/mention', './common-names'], functi
             },
             function (common_names_1_1) {
                 common_names_1 = common_names_1_1;
+            },
+            function (tinymce_component_1_1) {
+                tinymce_component_1 = tinymce_component_1_1;
             }],
         execute: function() {
             AppComponent = (function () {
@@ -31,8 +34,8 @@ System.register(['angular2/core', './mention/mention', './common-names'], functi
                 AppComponent = __decorate([
                     core_1.Component({
                         selector: 'my-app',
-                        template: "\n    <h1>Angular 2 Mentions</h1>\n    <p>Simple Angular2 mentions inspired by <a href=\"http://jeff-collins.github.io/ment.io/#/\">Ment.io</a>.</p>\n    <p style=\"color:grey\">Supports auto-complete for mentions in text input fields, text areas,\n    and content editable fields. Try entering some @names below.</p>\n\n    <h3>Minimal</h3>\n    <input [mention]=\"items\" class=\"form-control\" type=\"text\">\n\n    <h3>Textarea</h3>\n    <textarea [mention]=\"items\" class=\"form-control\" cols=\"60\" rows=\"4\"></textarea>\n\n    <h3>Content Editable</h3>\n    <div [mention]=\"items\" contenteditable=\"true\" style=\"border:1px lightgrey solid;min-height:88px\"></div>\n\n    <br><p style=\"color:grey\">ng2-mentions on <a href=\"\">Github</a></p>\n    <a href=\"https://github.com/dmacfarlane/ng2-mentions\"><img style=\"position: absolute; top: 0; right: 0; border: 0;\" src=\"https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67\" alt=\"Fork me on GitHub\" data-canonical-src=\"https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png\"></a>\n    ",
-                        directives: [mention_1.Mention]
+                        template: "\n    <h1>Angular 2 Mentions</h1>\n    <p>Simple Angular2 mentions inspired by <a href=\"http://jeff-collins.github.io/ment.io/#/\">Ment.io</a>.</p>\n    <p style=\"color:grey\">Supports auto-complete for mentions in text input fields, text areas,\n    and content editable fields. Try entering some @names below.</p>\n\n    <h3>Minimal</h3>\n    <input [mention]=\"items\" class=\"form-control\" type=\"text\">\n\n    <h3>Textarea</h3>\n    <textarea [mention]=\"items\" class=\"form-control\" cols=\"60\" rows=\"4\"></textarea>\n\n    <h3>Content Editable</h3>\n    <div [mention]=\"items\" class=\"form-control\" contenteditable=\"true\" style=\"border:1px lightgrey solid;min-height:88px\"></div>\n\n    <h3>Embedded Editor</h3>\n    <tinymce></tinymce>\n\n    <br><p style=\"color:grey\">ng2-mentions on <a href=\"\">Github</a></p>\n    <a href=\"https://github.com/dmacfarlane/ng2-mentions\"><img style=\"position: absolute; top: 0; right: 0; border: 0;\" src=\"https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67\" alt=\"Fork me on GitHub\" data-canonical-src=\"https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png\"></a>\n    ",
+                        directives: [mention_1.Mention, tinymce_component_1.TinyMCE]
                     }), 
                     __metadata('design:paramtypes', [])
                 ], AppComponent);
