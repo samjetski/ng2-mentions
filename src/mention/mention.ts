@@ -45,6 +45,7 @@ export class Mention {
   @Input() set mention(items:string []){
     this.items = items.sort();
   }
+  @Input('mentionTriggerChar') triggerChar: string = "@";
 
   setIframe(iframe) {
     this.iframe = iframe;
@@ -82,7 +83,7 @@ export class Mention {
       setCaretPosition(this.startNode, pos, this.iframe);
     }
     //console.log("keyHandler", this.startPos, pos, val, charPressed, event);
-    if (charPressed=="@") {
+    if (charPressed==this.triggerChar) {
       this.startPos = pos;
       this.startNode = (this.iframe ? this.iframe.contentWindow.getSelection() : window.getSelection()).anchorNode;
       this.escapePressed = false;
@@ -102,7 +103,7 @@ export class Mention {
             this.stopEvent(event);
             this.searchList.hidden = true;
             insertValue(nativeElement, this.startPos, pos,
-                        "@"+this.searchList.activeItem+" ", this.iframe);
+                        this.triggerChar+this.searchList.activeItem+" ", this.iframe);
             // fire input event so angular bindings are updated
             if ("createEvent" in document) {
               var evt = document.createEvent("HTMLEvents");
