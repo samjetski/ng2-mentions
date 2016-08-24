@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Input, ComponentFactoryResolver, ViewContainerRef } from "@angular/core";
+import { Directive, ElementRef, EventEmitter, Input, Output, ComponentFactoryResolver, ViewContainerRef } from "@angular/core";
 
 import { MentionListComponent } from './mention-list.component';
 import { getValue, insertValue, getCaretPosition, setCaretPosition } from './mention-utils';
@@ -43,8 +43,18 @@ export class MentionDirective {
   @Input() triggerChar: string = "@";
 
   @Input() set mention(items:string []){
-    this.items = items.sort();
+    if (this.disableFilter){
+      this.items = items;
+    }
+    else {
+      this.items = items.sort();
+    }
+    if (this.searchList){
+      this.searchList.items = this.items;
+    }
   }
+  @Input('mentionDisableFilter') disableFilter: boolean = false;
+  @Output('mentionSuggested') onSuggested = new EventEmitter<string>();
 
   setIframe(iframe: HTMLIFrameElement) {
     this.iframe = iframe;
@@ -87,6 +97,7 @@ export class MentionDirective {
       this.startPos = pos;
       this.startNode = (this.iframe ? this.iframe.contentWindow.getSelection() : window.getSelection()).anchorNode;
       this.escapePressed = false;
+      this.onSuggested.emit(charPressed);
       this.showSearchList(nativeElement);
     }
     else if (this.startPos >= 0 && !this.escapePressed) {
@@ -148,10 +159,14 @@ export class MentionDirective {
           if (event.keyCode !== KEY_BACKSPACE) {
             mention += charPressed;
           }
-          let regEx = new RegExp("^" + mention.substring(1), "i");
-          let matches = this.items.filter(e => e.match(regEx) != null);
-          this.searchList.items = matches;
-          this.searchList.hidden = matches.length == 0 || pos <= this.startPos;
+          this.onSuggested.emit(mention);
+          if (!this.disableFilter){
+            let regEx = new RegExp("^" + mention.substring(1), "i");
+            let matches = this.items.filter(e => e.match(regEx) != null);
+            this.searchList.items = matches;
+            this.searchList.hidden = matches.length == 0;
+          }
+          this.searchList.hidden = this.searchList.hidden || pos <= this.startPos;
         }
       }
     }
