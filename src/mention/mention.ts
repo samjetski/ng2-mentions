@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Input } from "@angular/core";
+import { Directive, ElementRef, EventEmitter, Input, Output } from "@angular/core";
 import { DynamicComponentLoader, ComponentRef, ViewContainerRef } from "@angular/core";
 
 import { MentionList } from './mention-list';
@@ -37,15 +37,25 @@ export class Mention {
   escapePressed:boolean;
   iframe:any; // optional
   constructor(
-    private _element: ElementRef, 
+    private _element: ElementRef,
     private _dcl: DynamicComponentLoader,
     private _viewContainerRef: ViewContainerRef
   ) {}
 
   @Input() set mention(items:string []){
-    this.items = items.sort();
+    if (this.disableFilter){
+      this.items = items;
+    }
+    else {
+      this.items = items.sort();
+    }
+    if (this.searchList){
+      this.searchList.items = this.items;
+    }
   }
   @Input('mentionTriggerChar') triggerChar: string = "@";
+  @Input('mentionDisableFilter') disableFilter: boolean = false;
+  @Output('mentionSuggested') onSuggested = new EventEmitter<string>();
 
   setIframe(iframe) {
     this.iframe = iframe;
@@ -87,6 +97,7 @@ export class Mention {
       this.startPos = pos;
       this.startNode = (this.iframe ? this.iframe.contentWindow.getSelection() : window.getSelection()).anchorNode;
       this.escapePressed = false;
+      this.onSuggested.emit(charPressed);
       this.showSearchList(nativeElement);
     }
     else if (this.startPos>=0 && !this.escapePressed) {
@@ -141,10 +152,14 @@ export class Mention {
           if (event.keyCode !== KEY_BACKSPACE) {
             mention += charPressed;
           }
-          let regEx = new RegExp("^"+mention.substring(1),"i");
-          let matches = this.items.filter(e=>e.match(regEx)!=null);
-          this.searchList.items = matches;
-          this.searchList.hidden = matches.length==0 || pos<=this.startPos;
+          this.onSuggested.emit(mention);
+          if (!this.disableFilter){
+            let regEx = new RegExp("^" + mention.substring(1), "i");
+            let matches = this.items.filter(e=>e.match(regEx) != null);
+            this.searchList.items = matches;
+            this.searchList.hidden = matches.length == 0;
+          }
+          this.searchList.hidden = this.searchList.hidden || pos <= this.startPos;
         }
       }
     }
@@ -161,7 +176,7 @@ export class Mention {
           containerRef.instance['itemClick'].subscribe(ev => {
             nativeElement.focus();
             let fakeKeydown = {"keyCode":KEY_ENTER,"wasClick":true};
-            this.keyHandler(fakeKeydown, nativeElement);            
+            this.keyHandler(fakeKeydown, nativeElement);
           });
       });
     }
