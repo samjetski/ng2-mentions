@@ -51,6 +51,7 @@ export class MentionDirective {
     }
     if (this.searchList){
       this.searchList.items = this.items;
+      this.searchList.hidden = !(this.items.length>0 && this.startPos>=0 && !this.escapePressed);
     }
   }
   @Input('mentionDisableFilter') disableFilter: boolean = false;
@@ -87,7 +88,7 @@ export class MentionDirective {
         charPressed = String.fromCharCode(event.which || event.keyCode);
       }
     }
-    if (event.keyCode == 13 && event.wasClick && pos < this.startPos) {
+    if (event.keyCode==KEY_ENTER && event.wasClick && pos < this.startPos) {
       // put caret back in position prior to contenteditable menu click
       pos = this.startNode.length;
       setCaretPosition(this.startNode, pos, this.iframe);
@@ -111,7 +112,7 @@ export class MentionDirective {
           this.startPos = -1;
         }
         else if (event.keyCode === KEY_BACKSPACE && pos > 0) {
-          this.searchList.hidden = this.escapePressed;
+          this.searchList.hidden = this.escapePressed || !this.searchList.items.length;
           pos--;
         }
         else if (!this.searchList.hidden) {
@@ -178,7 +179,7 @@ export class MentionDirective {
       let componentRef = this._viewContainerRef.createComponent(componentFactory);
       this.searchList = componentRef.instance
       this.searchList.items = this.items;
-      this.searchList.hidden = false;
+      this.searchList.hidden = !this.searchList.items.length;
       this.searchList.position(nativeElement, this.iframe);
       componentRef.instance['itemClick'].subscribe(() => {
         nativeElement.focus();
@@ -189,7 +190,7 @@ export class MentionDirective {
     else {
       this.searchList.activeIndex = 0;
       this.searchList.items = this.items;
-      this.searchList.hidden = false;
+      this.searchList.hidden = !this.searchList.items.length;
       this.searchList.position(nativeElement, this.iframe);
     }
   }
