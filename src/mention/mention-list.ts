@@ -26,13 +26,16 @@ import { getCaretCoordinates } from './caret-coords';
     template: `
     <ul class="dropdown-menu scrollable-menu" [hidden]="hidden">
         <li *ngFor="let item of items; let i = index" [class.active]="activeIndex==i">
-            <a class="text-primary" (mousedown)="activeIndex=i;itemClick.emit();$event.preventDefault()">{{item}}</a>
+            <a class="text-primary" (mousedown)="activeIndex=i;itemClick.emit();$event.preventDefault()"
+                [innerHTML]="getFormattedLabel(item)"></a>
         </li>
     </ul>
     `
 })
 export class MentionList {
   items = [];
+  itemLabel: string;
+  labelFormatter: (val: any) => string;
   activeIndex:number = 0;
   hidden = false;
   @Output() itemClick = new EventEmitter();
@@ -75,5 +78,23 @@ export class MentionList {
   }
   activatePreviousItem(){
     this.activeIndex = Math.max(Math.min(this.activeIndex-1, this.items.length-1), 0);
+  }
+  getFormattedLabel(item){
+    let formatter = this.labelFormatter || this.defaultLabelFormatter;
+    return formatter.apply(this, [item]);
+  }
+
+  private defaultLabelFormatter(item: any){
+    if (typeof item == "string"){
+      return item;
+    }
+
+    if (this.itemLabel && item.hasOwnProperty(this.itemLabel)){
+      return item[this.itemLabel];
+    }
+    else {
+      console.error("[mention] Could not format item label: item is not a string, and 'itemLabel' attribute not supplied.");
+      return "";
+    }
   }
 }

@@ -42,7 +42,7 @@ export class Mention {
     private _viewContainerRef: ViewContainerRef
   ) {}
 
-  @Input() set mention(items:string []){
+  @Input() set mention(items:any []){
     if (this.disableFilter){
       this.items = items;
     }
@@ -55,6 +55,10 @@ export class Mention {
     }
   }
   @Input('mentionTriggerChar') triggerChar: string = "@";
+  @Input('mentionItemLabel') itemLabel: string;
+  @Input('mentionItemValue') itemValue: string;
+  @Input('mentionLabelFormatter') labelFormatter: (val: any) => string;
+  @Input('mentionValueFormatter') valueFormatter: (val: any) => string;
   @Input('mentionDisableFilter') disableFilter: boolean = false;
   @Output('mentionSuggested') onSuggested = new EventEmitter<string>();
 
@@ -115,7 +119,7 @@ export class Mention {
             this.stopEvent(event);
             this.searchList.hidden = true;
             insertValue(nativeElement, this.startPos, pos,
-                        this.triggerChar+this.searchList.activeItem+" ", this.iframe);
+                        this.getFormattedValue(this.searchList.activeItem)+" ", this.iframe);
             // fire input event so angular bindings are updated
             if ("createEvent" in document) {
               var evt = document.createEvent("HTMLEvents");
@@ -172,6 +176,8 @@ export class Mention {
         .then((containerRef: ComponentRef<MentionList>) => {
           this.searchList = containerRef.instance;
           this.searchList.items = this.items;
+          this.searchList.itemLabel = this.itemLabel;
+          this.searchList.labelFormatter = this.labelFormatter;
           this.searchList.hidden = !this.searchList.items.length;
           this.searchList.position(nativeElement, this.iframe);
           containerRef.instance['itemClick'].subscribe(ev => {
@@ -184,8 +190,29 @@ export class Mention {
     else {
       this.searchList.activeIndex = 0;
       this.searchList.items = this.items;
+      this.searchList.itemLabel = this.itemLabel;
+      this.searchList.labelFormatter = this.labelFormatter;
       this.searchList.hidden = !this.searchList.items.length;
       this.searchList.position(nativeElement, this.iframe);
+    }
+  }
+
+  getFormattedValue(item){
+    let formatter = this.valueFormatter || this.defaultValueFormatter;
+    return formatter.apply(this, [item]);
+  }
+
+  defaultValueFormatter(item){
+    if (typeof item == "string"){
+      return this.triggerChar+item;
+    }
+
+    if (this.itemValue && item.hasOwnProperty(this.itemValue)){
+      return this.triggerChar+item[this.itemValue];
+    }
+    else {
+      console.error("[mention] Could not format item value: item is not a string, and 'itemValue' attribute not supplied.");
+      return "";
     }
   }
 }
