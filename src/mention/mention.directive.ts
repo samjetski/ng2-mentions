@@ -42,7 +42,7 @@ export class MentionDirective {
 
   @Input() triggerChar: string = "@";
 
-  @Input() set mention(items:string []){
+  @Input() set mention(items:any []){
     if (this.disableFilter){
       this.items = items;
     }
@@ -54,6 +54,10 @@ export class MentionDirective {
       this.searchList.hidden = !(this.items.length>0 && this.startPos>=0 && !this.escapePressed);
     }
   }
+  @Input('mentionItemLabel') itemLabel: string;
+  @Input('mentionItemValue') itemValue: string;
+  @Input('mentionLabelFormatter') labelFormatter: (val: any) => string;
+  @Input('mentionValueFormatter') valueFormatter: (val: any) => string;
   @Input('mentionDisableFilter') disableFilter: boolean = false;
   @Output('mentionSuggested') onSuggested = new EventEmitter<string>();
 
@@ -122,7 +126,7 @@ export class MentionDirective {
             // value is inserted without a trailing space for consistency
             // between element types (div and iframe do not preserve the space)
             insertValue(nativeElement, this.startPos, pos,
-              this.triggerChar + this.searchList.activeItem, this.iframe);
+              this.getFormattedValue(this.searchList.activeItem), this.iframe);
             // fire input event so angular bindings are updated
             if ("createEvent" in document) {
               var evt = document.createEvent("HTMLEvents");
@@ -179,6 +183,8 @@ export class MentionDirective {
       let componentRef = this._viewContainerRef.createComponent(componentFactory);
       this.searchList = componentRef.instance
       this.searchList.items = this.items;
+      this.searchList.itemLabel = this.itemLabel;
+      this.searchList.labelFormatter = this.labelFormatter;
       this.searchList.hidden = !this.searchList.items.length;
       this.searchList.position(nativeElement, this.iframe);
       componentRef.instance['itemClick'].subscribe(() => {
@@ -190,8 +196,29 @@ export class MentionDirective {
     else {
       this.searchList.activeIndex = 0;
       this.searchList.items = this.items;
+      this.searchList.itemLabel = this.itemLabel;
+      this.searchList.labelFormatter = this.labelFormatter;
       this.searchList.hidden = !this.searchList.items.length;
       this.searchList.position(nativeElement, this.iframe);
+    }
+  }
+
+  getFormattedValue(item){
+    let formatter = this.valueFormatter || this.defaultValueFormatter;
+    return formatter.apply(this, [item]);
+  }
+
+  defaultValueFormatter(item){
+    if (typeof item == "string"){
+      return this.triggerChar+item;
+    }
+
+    if (this.itemValue && item.hasOwnProperty(this.itemValue)){
+      return this.triggerChar+item[this.itemValue];
+    }
+    else {
+      console.error("[mention] Could not format item value: item is not a string, and 'itemValue' attribute not supplied.");
+      return "";
     }
   }
 }
