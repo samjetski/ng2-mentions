@@ -57,8 +57,9 @@ export class Mention {
   @Input('mentionTriggerChar') triggerChar: string = "@";
   @Input('mentionItemLabel') itemLabel: string;
   @Input('mentionItemValue') itemValue: string;
-  @Input('mentionLabelFormatter') labelFormatter: (val: any) => string;
-  @Input('mentionValueFormatter') valueFormatter: (val: any) => string;
+  @Input('mentionLabelFormatter') labelFormatter: (item: any) => string;
+  @Input('mentionValueFormatter') valueFormatter: (item: any) => string;
+  @Input('mentionInsertCalibrator') insertCalibrator: (item: any, into: string, start: number, end: number) => number[];
   @Input('mentionDisableFilter') disableFilter: boolean = false;
   @Output('mentionSuggested') onSuggested = new EventEmitter<string>();
 
@@ -118,7 +119,8 @@ export class Mention {
           if (event.keyCode === KEY_TAB || event.keyCode === KEY_ENTER) {
             this.stopEvent(event);
             this.searchList.hidden = true;
-            insertValue(nativeElement, this.startPos, pos,
+            let insertPos: number[] = this.getInsertCalibration(this.searchList.activeItem, val, this.startPos, pos);
+            insertValue(nativeElement, insertPos[0], insertPos[1],
                         this.getFormattedValue(this.searchList.activeItem)+" ", this.iframe);
             // fire input event so angular bindings are updated
             if ("createEvent" in document) {
@@ -215,4 +217,14 @@ export class Mention {
       return "";
     }
   }
+
+  getInsertCalibration(item, into, start, end){
+    let formatter = this.insertCalibrator || this.defaultInsertCalibrator;
+    return formatter.apply(this, [item, into, start, end]);
+  }
+
+  defaultInsertCalibrator(item, into, start, end){
+    return [start, end];
+  }
+
 }
